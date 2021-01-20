@@ -1,20 +1,20 @@
 // write your code here
 const ramenMenu = document.querySelector("#ramen-menu")
-const imgDetail = document.querySelector(".detail-image")
-const ramenName = document.querySelector("h2.name")
-const ramenRestaurant = document.querySelector("h3.restaurant")
 const ramenRating = document.querySelector("#rating")
 const ramenComment = document.querySelector("textarea#comment")
+const ramenEditForm = document.querySelector("#ramen-rating")
 
 /***** Get all ramens */
 
 function renderRamen(ramenObj){
 
+    const div = document.createElement("div")
     const ramenImg = document.createElement("img")
     ramenImg.src = ramenObj.image
-    ramenImg.dataset.id = ramenObj.id
-
-    ramenMenu.append(ramenImg)
+    ramenImg.dataset.raamenId = ramenObj.id
+// debugger
+    div.append(ramenImg)
+    ramenMenu.append(div)
 
 }
 
@@ -35,21 +35,62 @@ getAllRamens()
 
 function renderRamenInfo(ramenObj) {
 
+    const imgDetail = document.querySelector(".detail-image")
     imgDetail.src =ramenObj.image
-    ramenName.textContent = ramenObj.name 
+
+    ramenEditForm.dataset.raamenId = ramenObj.id
+
+    const ramenName = document.querySelector("h2.name")
+    ramenName.textContent = ramenObj.name
+
+    const ramenRestaurant = document.querySelector("h3.restaurant")
     ramenRestaurant.textContent = ramenObj.restaurant 
-    ramenRating.value = ramenObj.rating 
-    ramenComment.textContent = ramenObj.comment 
+
+    ramenRating.value = ramenObj.rating
+    ramenComment.value = ramenObj.comment 
+
+    
 }
 
 ramenMenu.addEventListener("click", event => {
 
-    const id = event.target.dataset.id
+    const id = event.target.dataset.raamenId
 
+   getRamenById(id)
+})
+
+function getRamenById(id) {
     fetch(`http://localhost:3000/ramens/${id}`)
     .then(response => response.json())
     .then(ramenObj => {
           renderRamenInfo(ramenObj)
         
     })
+}
+
+/**** Edit ramen form*/
+ramenEditForm.addEventListener("submit", event => {
+        event.preventDefault()
+        
+    const id = event.target.dataset.raamenId
+ 
+    const newRating = {
+        rating: parseInt(ramenRating.value),
+        comment: ramenComment.value
+    }
+    updateRamen(id, newRating)
 })
+
+function updateRamen(id, newRating){
+
+    fetch(`http://localhost:3000/ramens/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newRating)
+      })
+      .then(response => response.json())
+      .then(data => console.log(data))
+}
+
